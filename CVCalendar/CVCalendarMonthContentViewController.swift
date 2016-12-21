@@ -230,13 +230,20 @@ public final class CVCalendarMonthContentViewController: CVCalendarContentViewCo
     private var togglingBlocked = false
     public override func togglePresentedDate(date: NSDate) {
         let presentedDate = Date(date: date)
-        guard let presentedMonth = monthViews[presented],
-            selectedDate = calendarView.coordinator.selectedDayView?.date else {
+        guard let presentedMonth = monthViews[presented] else {
                 return
         }
-
-        if !matchedDays(selectedDate, presentedDate) && !togglingBlocked {
-            if !matchedMonths(presentedDate, selectedDate) {
+        var isMatchedDays = false
+        var isMatchedMonths = false
+        
+        // selectedDayView would be nil if shouldAutoSelectDayOnMonthChange returns false
+        // we want to still allow the user to toggle to a date even if there is nothing selected
+        if let selectedDate = calendarView.coordinator.selectedDayView?.date {
+            isMatchedDays = matchedDays(selectedDate, presentedDate)
+            isMatchedMonths = matchedMonths(presentedDate, selectedDate)
+        }
+        if !isMatchedDays && !togglingBlocked {
+            if !isMatchedMonths {
                 togglingBlocked = true
 
                 monthViews[previous]?.removeFromSuperview()
